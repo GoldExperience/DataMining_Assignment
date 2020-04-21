@@ -1,6 +1,8 @@
 # CA683 - Data Analytics and Data Mining Assignment
 Factors inﬂuencing ratings in AirBnB
 
+## Modeling on Reviews
++ [Modeling on Reviews (R)](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/bayes%20and%20such.R)
 
 ## Data Exploration
 + [Data Exploration](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/Reviews%20dataset.ipynb)
@@ -18,8 +20,7 @@ Factors inﬂuencing ratings in AirBnB
 + [Modeling on word embedding features](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/Classification_listing.ipynb)
 + [Modeling on numeric features](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/numeric_data_modeling.ipynb)
 
-## Modeling on Reviews
-+ [Modeling on Reviews (R)](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/bayes%20and%20such.R)
+
 
 
 
