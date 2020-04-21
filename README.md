@@ -1,4 +1,6 @@
-# DataMining_Assignment
+# CA683 - Data Analytics and Data Mining Assignment
+Factors inﬂuencing ratings in AirBnB
+
 
 ## Data Exploration
 + [Data Exploration](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/Reviews%20dataset.ipynb)
