@@ -1,6 +1,8 @@
 # CA683 - Data Analytics and Data Mining Assignment
 Factors inﬂuencing ratings in AirBnB
-
+## Dataset
++ [Inside Airbnb](http://insideairbnb.com/get-the-data.html)
+  
 ## Modeling on Reviews
 + [Modeling on Reviews (R)](https://github.com/GoldExperience/DataMining_Assignment/blob/master/Scripts/bayes%20and%20such.R)
 
