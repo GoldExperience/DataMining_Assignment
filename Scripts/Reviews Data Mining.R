@@ -3,21 +3,45 @@ library(tidytext)
 library(caret)
 library(e1071)
 library(pROC)
+library(textstem)
+library(caTools)
+library(quanteda)
+library(tm)
 
 # the data is too big we need to take a sample
 data1 = read.csv("C:\\Users\\Y.Shoun\\Documents\\Cours\\M2\\S2\\CA683 - Data Analytics and Data Mining\\Continuous_Assesment\\data\\reviewsToR.csv", sep= ",", header = TRUE)
 data = data1
 
+# take neutral out
+positive <- data[data$sentiment == "positive", ]
+negative <- data[data$sentiment == "negative", ]
+
+data <- rbind(positive, negative)
+data$sentiment <- factor(data$sentiment)  
+str(data)
+data <- subset(data, select = -c(polarity))
+data <- data[!apply(data == "", 1, all),]
+
+#shuffle the new dataset
+set.seed(42)
+rows <- sample(nrow(data))
+rows <- data[rows, ]
+set.seed(123)
+rows <- sample(nrow(data))
+data <- data[rows, ]
+
+
 # taking a sample
 set.seed(100)
-n01 = floor(nrow(data1)*0.007) # 0.001
-sample = sample.int(nrow(data1),n01)
-data = data1[sample,]
+n01 = floor(nrow(data)*0.04) # 0.001
+sample = sample.int(nrow(data),n01)
+data = data[sample,]
 
 str(data)
-data <- subset(data, select = -c(listing_id, id, date, reviewer_id, comments, polarity))
+data <- subset(data, select = -c(listing_id, id, date, reviewer_id, comments))
 data$comments_clean <- as.character (data$comments_clean)
 data$sentiment <- as.factor(data$sentiment)
+
 
 ##### TF-IDF on NB #####
 
@@ -54,14 +78,15 @@ dim(dtm.test.nb)
 
 # Function to convert the word frequencies to yes (presence) and no (absence) labels
 convert_count <- function(x) {
-  y <- ifelse(x < 0, -1,1)
-  y <- factor(y, levels=c(-1,1), labels=c("negative_value", "positive_value"))
+  y <- ifelse(x < 0, 1,0)
+  y <- factor(y, levels=c(0,1), labels=c("negative_value", "positive_value"))
   y
 }
 
 # Apply the convert_count function to get final training and testing DTMs
 trainNB <- apply(dtm.train.nb, 2, convert_count)
 testNB <- apply(dtm.test.nb, 2, convert_count)
+
 
 # Train the classifier
 # https://cran.r-project.org/web/packages/naivebayes/naivebayes.pdf
@@ -113,7 +138,7 @@ plot(10^(-3:2),model.tune$performance$error,log="x")
 lines(10^(-3:2),model.tune$performance$error)
 
 # train model
-model.svm <- svm(class~.,data=train_data, kernel='linear',cost=0.1)
+model.svm <- svm(class~.,data=train_data, kernel='linear',cost=1)
 model.svm
 
 #Predict Output
@@ -182,36 +207,6 @@ set.seed(123)
 rows <- sample(nrow(data))
 data <- data[rows, ]
 
-# Tokenization
-tokenization <- function(data.old){
-  # http://www.endmemo.com/program/R/gsub.php  
-  
-  # remove contraction
-  dat<-replace_contraction(data.old)
-  # to lower case
-  dat<-tolower(dat)
-  # remove retweet entities
-  dat<-gsub('(RT|via)((?:\\b\\W*@\\w+)+)', '', dat)
-  # remove mentions
-  dat<-gsub('@\\w+', '', dat)
-  # remove punctuation
-  dat<-gsub('[[:punct:]]', '', dat)
-  # remove numbers
-  dat<- removeNumbers(dat)
-  # remove html links
-  dat<-gsub('http\\w+', '', dat)
-  # Remove unecessary words
-  dat <- removeWords(dat, stopwords('en'))
-  # remove unnecessary spaces
-  dat <- stripWhitespace(dat)
-  # remove emojis or special characters
-  dat<-gsub('<.*>', '', enc2native(dat))
-  
-  return(dat)
-}
-
-data$comments_clean <- tokenization(data$comments_clean)
-
 
 ##### TF-IDF on NB reworked #####
 
@@ -239,8 +234,7 @@ dtm.test<-dtm[185:263,]
 corpus.clean.train <- corpus.clean[1:184]
 corpus.clean.test <- corpus.clean[185:263]
 
-
-freq <- findFreqTerms(dtm.train) # only keep word that has a freq of a t least 5
+freq <- findFreqTerms(dtm.train, 5) # only keep word that has a freq of a t least 5
 length((freq))
 
 dtm.train.nb <- DocumentTermMatrix(corpus.clean.train, control=list(dictionary = freq))
@@ -251,8 +245,8 @@ dim(dtm.test.nb)
 
 # Function to convert the word frequencies to yes (presence) and no (absence) labels
 convert_count <- function(x) {
-  y <- ifelse(x < 0, -1,1)
-  y <- factor(y, levels=c(-1,1), labels=c("negative_value", "positive_value"))
+  y <- ifelse(x < 0, 1,0)
+  y <- factor(y, levels=c(0,1), labels=c("negative_value", "positive_value"))
   y
 }
 
@@ -260,12 +254,13 @@ convert_count <- function(x) {
 trainNB <- apply(dtm.train.nb, 2, convert_count)
 testNB <- apply(dtm.test.nb, 2, convert_count)
 
+
 # Train the classifier
 # https://cran.r-project.org/web/packages/naivebayes/naivebayes.pdf
 # according to the doc, naive_bayes is used to fit Naive Bayes model in which predictors are assumed to be independent within each class label.
 classifier <- naiveBayes(trainNB, df.train$sentiment) # X_train, Y_train
 pred <- predict(classifier, newdata=testNB)
-pred
+
 mean(pred != df.test$sentiment)
 
 library(caret)
@@ -309,7 +304,7 @@ plot(10^(-3:2),model.tune$performance$error,log="x")
 lines(10^(-3:2),model.tune$performance$error)
 
 # train model
-model.svm <- svm(class~.,data=train_data, kernel='linear',cost=0.1)
+model.svm <- svm(class~.,data=train_data, kernel='linear',cost=1)
 model.svm
 
 #Predict Output
